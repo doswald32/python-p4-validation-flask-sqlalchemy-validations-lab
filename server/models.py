@@ -11,7 +11,22 @@ class Author(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
-    # Add validators 
+    @validates('name')
+    def validates_name(self, key, value):
+        for author in Author.query.all():
+            if author.name == value:
+                raise ValueError('Names must be unique')
+        if not value:
+            raise ValueError('Name cannot be blank')
+        return value
+    
+    @validates('phone_number')
+    def validates_phone(self, key, number):
+        if len(number) != 10:
+            raise ValueError('Phone number must be 10 digits')
+        
+        if number.isdigit() == False:
+            raise ValueError('Phone number can only contain digits')
 
     def __repr__(self):
         return f'Author(id={self.id}, name={self.name})'
@@ -27,7 +42,13 @@ class Post(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
-    # Add validators  
+    @validates('content', 'summary')
+    def validates_content(self, key, value):
+        if len(value) < 250:
+            raise ValueError('Content must be at least 250 characters long')
+        elif len(value) > 250:
+            raise ValueError('Summary must be a maximum of 250 characters')
+        
 
 
     def __repr__(self):
